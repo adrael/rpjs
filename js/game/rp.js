@@ -7,7 +7,10 @@ function RPJS(data) {
 			width: 0,
 			height: 0,
 			map: null,
-			player: null
+			player: null,
+			currentLine: 0,
+			currentColumn: 0,
+			players: new Array()
 		};
 	}
 
@@ -37,12 +40,16 @@ RPJS.prototype.setMap = function(map) {
 };
 
 RPJS.prototype.addPlayer = function(player) {
-	this.data.map.addPersonnage(player);
+	this.data.players.push(player);
 };
 
 RPJS.prototype.setMainPlayer = function(player) {
 	this.addPlayer(player);
 	this.data.player = player;
+};
+
+RPJS.prototype.setPlayers = function(players) {
+	this.data.players = players;
 };
 
 RPJS.prototype.setup = function() {
@@ -63,18 +70,40 @@ RPJS.prototype.setup = function() {
 		var key = e.which || e.keyCode;
 		
 		switch(key) {
+
 			case 38 : case 122 : case 119 : case 90 : case 87 : // Flèche haut, z, w, Z, W
-				self.data.player.deplacer(DIRECTION.HAUT, self.data.map);
+				switch(self.data.player.move(DIRECTION.UP, self.data.map, self.data.canvas)) {
+					case ERROR.END_OF_MAP: case ERROR.ANIMATION_STILL_IN_PROGRESS:
+					break;
+
+					case REQUEST.MOVE_MAP_UP:
+						console.log("request up");
+						--self.data.currentLine;
+					break;
+				}
+
 				break;
+
 			case 40 : case 115 : case 83 : // Flèche bas, s, S
-				self.data.player.deplacer(DIRECTION.BAS, self.data.map);
+				switch(self.data.player.move(DIRECTION.DOWN, self.data.map, self.data.canvas)) {
+					case ERROR.END_OF_MAP: case ERROR.ANIMATION_STILL_IN_PROGRESS:
+					break;
+
+					case REQUEST.MOVE_MAP_DOWN:
+						++self.data.currentLine;
+					break;
+				}
+
 				break;
+
 			case 37 : case 113 : case 97 : case 81 : case 65 : // Flèche gauche, q, a, Q, A
-				self.data.player.deplacer(DIRECTION.GAUCHE, self.data.map);
+				self.data.player.move(DIRECTION.LEFT, self.data.map, self.data.canvas);
 				break;
+
 			case 39 : case 100 : case 68 : // Flèche droite, d, D
-				self.data.player.deplacer(DIRECTION.DROITE, self.data.map);
+				self.data.player.move(DIRECTION.RIGHT, self.data.map, self.data.canvas);
 				break;
+
 			default : 
 				return true;
 		}
@@ -84,5 +113,10 @@ RPJS.prototype.setup = function() {
 };
 
 RPJS.prototype.updateMap = function() {
-	this.data.map.dessinerMap(this.data.context);
+	this.data.context.clearRect(0, 0, this.data.canvas.width, this.data.canvas.height);
+	this.data.map.draw(this.data.canvas.height, this.data.context, this.data.currentLine, this.data.currentColumn);
+
+	for(var i = 0, playersLength = this.data.players.length; i < playersLength; ++i) {
+		this.data.players[i].draw(this.data.context);
+	}
 };

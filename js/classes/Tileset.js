@@ -22,4 +22,12 @@ Tileset.prototype.dessinerTile = function(numero, context, xDestination, yDestin
 	var ySource = (ySourceEnTiles - 1) * 32;
 	
 	context.drawImage(this.image, xSource, ySource, 32, 32, xDestination, yDestination, 32, 32);
+
+	// DEBUG ONLY
+	//context.fillStyle = "red";
+	//context.rect(xDestination, yDestination, 32, 32);
+	//context.stroke();
+	//context.fillStyle = "blue";
+	//context.font = "bold 18px Arial";
+	//context.fillText(xDestination/32, xDestination+8, yDestination-8);
 }

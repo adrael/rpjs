@@ -1,9 +1,19 @@
 var DIRECTION = {
-	"BAS"    : 0,
-	"GAUCHE" : 1,
-	"DROITE" : 2,
-	"HAUT"   : 3
-}
+	"BAS"    : 10,
+	"GAUCHE" : 11,
+	"DROITE" : 12,
+	"HAUT"   : 13
+};
+
+var PROBLEMS = {
+	"NONE" : 20,
+	"ANIMATION_STILL_IN_PROGRESS" : 21,
+	"CANNOT_MOVE_PLAYER" : 22,
+	"MOVE_MAP_DOWN": 23,
+	"MOVE_MAP_UP": 24,
+	"MOVE_MAP_RIGHT": 25,
+	"MOVE_MAP_LEFT": 26
+};
 
 var DUREE_ANIMATION = 4;
 var DUREE_DEPLACEMENT = 15;
@@ -96,7 +106,7 @@ Personnage.prototype.getCoordonneesAdjacentes = function(direction) {
 Personnage.prototype.deplacer = function(direction, map) {
 	// On ne peut pas se déplacer si un mouvement est déjà en cours !
 	if(this.etatAnimation >= 0) {
-		return false;
+		return PROBLEMS.ANIMATION_STILL_IN_PROGRESS;
 	}
 
 	// On change la direction du personnage
@@ -104,10 +114,22 @@ Personnage.prototype.deplacer = function(direction, map) {
 		
 	// On vérifie que la case demandée est bien située dans la carte
 	var prochaineCase = this.getCoordonneesAdjacentes(direction);
+	console.log("ACTUAL_CASE: ", this.x, this.y);
+	console.log("NEXT_CASE: ", prochaineCase.x, prochaineCase.y);
 	if(prochaineCase.x < 0 || prochaineCase.y < 0 || prochaineCase.x >= map.getLargeur() || prochaineCase.y >= map.getHauteur()) {
-		// On retourne un booléen indiquant que le déplacement ne s'est pas fait, 
-		// Ça ne coute pas cher et ca peut toujours servir
-		return false;
+		return PROBLEMS.CANNOT_MOVE_PLAYER;
+
+	} else if(prochaineCase.y >= map.getDisplayedHeight()) {
+		return PROBLEMS.MOVE_MAP_DOWN;
+		
+	} else if(prochaineCase.y <= map.getDisplayedHeight()) {
+		return PROBLEMS.MOVE_MAP_UP;
+		
+	} else if(prochaineCase.x >= map.getDisplayedWidth()) {
+		return PROBLEMS.MOVE_MAP_RIGHT;
+
+	} else if(prochaineCase.x <= map.getDisplayedWidth()) {
+		return PROBLEMS.MOVE_MAP_LEFT;
 	}
 	
 	// On commence l'animation
@@ -116,6 +138,17 @@ Personnage.prototype.deplacer = function(direction, map) {
 	// On effectue le déplacement
 	this.x = prochaineCase.x;
 	this.y = prochaineCase.y;
+
+	console.log(this.x, this.y);
 		
-	return true;
+	return PROBLEMS.NONE;
 }
+
+Personnage.prototype.getCoordinates = function() {
+	return {x: this.x, y: this.y};
+};
+
+Personnage.prototype.setCoordinates = function(coordinates) {
+	this.x = coordinates.x;
+	this.y = coordinates.y;
+};
